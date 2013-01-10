@@ -6,4 +6,4 @@ A tree built with [AngularJS] (http://angularjs.org/).
 Examples
 ----------
 
-* Basic
+* Basic http://danielking.github.com/repo/angular-tree/examples/basic/
