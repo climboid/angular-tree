@@ -5,7 +5,9 @@
 
   window.App.controller('AppController', function($scope) {
     $scope.logs = [];
-    $scope.treeOptions = {
+    return $scope.treeOptions = {
+      expandedIconClass: 'icon-chevron-down',
+      collapsedIconClass: 'icon-chevron-right',
       getChildren: function(node, cb) {
         return cb([
           {
@@ -36,13 +38,6 @@
         ].concat($scope.logs);
       }
     };
-    return $scope.treeRootNodes = [
-      {
-        label: 'hello'
-      }, {
-        label: 'hi'
-      }
-    ];
   });
 
 }).call(this);

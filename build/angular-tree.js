@@ -4,11 +4,15 @@
 
   array_insert = function(array, item, newItems, pos) {
     var idx;
-    idx = array.indexOf(item);
-    if (idx !== -1) {
-      return array.concat(newItems, array.splice(idx + (pos === 'right' ? 1 : 0)));
+    if (array.length > 0) {
+      idx = array.indexOf(item);
+      if (idx !== -1) {
+        return array.concat(newItems, array.splice(idx + (pos === 'right' ? 1 : 0)));
+      } else {
+        return array;
+      }
     } else {
-      return array;
+      return newItems;
     }
   };
 
@@ -25,48 +29,60 @@
       template: '<div>\n<div angular-tree-node ng-repeat="node in nodes"\n	data-node="node" data-options="options"></div></div>',
       replace: true,
       scope: {
-        nodes: '=nodes',
         options: '=options'
       },
       link: function(scope, element, attrs) {
+        var getChildren;
+        scope.nodes = [];
+        getChildren = function(node) {
+          if (scope.options.getChildren) {
+            return scope.options.getChildren(node, function(data) {
+              var item, _i, _len;
+              for (_i = 0, _len = data.length; _i < _len; _i++) {
+                item = data[_i];
+                item.level = node ? node.level + 1 : 0;
+                item.parent = node;
+              }
+              scope.nodes = array_insert(scope.nodes, node, data, 'right');
+              if (node) {
+                node.loaded = true;
+                return node.expanded = true;
+              }
+            });
+          }
+        };
         scope.onExpanderClick = function(node) {
           if (!node.level) {
             node.level = 0;
           }
           if (!node.loaded) {
-            if (scope.options.getChildren) {
-              return scope.options.getChildren(node, function(data) {
-                var item, _i, _len;
-                for (_i = 0, _len = data.length; _i < _len; _i++) {
-                  item = data[_i];
-                  item.level = node.level + 1;
-                  item.parent = node;
-                }
-                scope.nodes = array_insert(scope.nodes, node, data, 'right');
-                node.loaded = true;
-                return node.expanded = true;
-              });
-            }
+            getChildren(node);
           } else {
-            return node.expanded = !node.expanded;
+            node.expanded = !node.expanded;
           }
+          return true;
         };
-        return scope.onLabelClick = function(node) {
+        scope.onLabelClick = function(node) {
           var item, _i, _len, _ref;
-          _ref = scope.nodes;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            item = _ref[_i];
-            item.selected = false;
+          if (node.selected) {
+            return false;
+          } else {
+            _ref = scope.nodes;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              item = _ref[_i];
+              item.selected = false;
+            }
+            return node.selected = true;
           }
-          return node.selected = true;
         };
+        return getChildren();
       }
     };
   });
 
   angular.module('$angularTree.directives').directive('angularTreeNode', function() {
     return {
-      template: '<div class="angular-tree-node" ng-show="node.visible" ng-class="nodeClass">\n	<i ng-style="{marginLeft: node.level + \'em\'}"></i>\n	<i ng-class="expanderClass" class="icon-chevron-right angular-tree-node-expander" ng-click="onExpanderClick(node); options.onExpanderClick(node)"></i>\n	<span class="angular-tree-node-label" ng-click="onLabelClick(node); options.onLabelClick(node);">{{node.label}}</span>\n</div>',
+      template: '<div class="angular-tree-node" ng-show="node.visible" ng-class="nodeClass">\n	<i ng-style="{marginLeft: node.level + \'em\'}"></i>\n	<i ng-class="expanderClass" class="angular-tree-icon-collapsed angular-tree-node-expander" ng-click="onExpanderClick(node) && options.onExpanderClick(node)"></i>\n	<span class="angular-tree-node-label" ng-click="onLabelClick(node) && options.onLabelClick(node);">{{node.label}}</span>\n</div>',
       replace: true,
       link: function(scope, element, attrs) {
         scope.$watch('node.parent.expanded', function(expanded) {
@@ -84,7 +100,7 @@
           }
         });
         scope.$watch('node.expanded', function(v) {
-          return scope.expanderClass = v ? 'icon-chevron-down' : 'icon-chevron-right';
+          return scope.expanderClass = v ? scope.options.expandedIconClass || 'angular-tree-icon-expanded' : scope.options.collapsedIconClass || 'angular-tree-icon-collapsed';
         });
         return scope.$watch('node.selected', function(v) {
           return scope.nodeClass = v ? 'selected' : '';
