@@ -24,6 +24,9 @@ module.exports = function(grunt) {
       },
       examples: {
         dir: 'examples'
+      },
+      test: {
+        dir: 'test'
       }
     },
     min: {
@@ -36,6 +39,10 @@ module.exports = function(grunt) {
       src: {
         files: ['src/**/*.coffee'],
         tasks: 'coffee:src min'
+      },
+      test: {
+        files: ['test/**/*.coffee'],
+        tasks: 'coffee:test'
       },
       examples: {
         files: ['examples/**/*.coffee'],
