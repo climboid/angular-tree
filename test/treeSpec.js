@@ -28,12 +28,30 @@
       $compile(elm)(scope);
       return scope.$digest();
     }));
-    return it('should get 2 root notes at the beginning', function() {
+    it('should get 2 root notes at the beginning', function() {
       var nodes;
       nodes = elm.find('div.angular-tree-node');
       nodes.length.should.equal(2);
       $(nodes[0]).find('.angular-tree-node-expander').hasClass('icon-chevron-right').should.equal(true);
       return $(nodes[1]).find('.angular-tree-node-expander').hasClass('icon-chevron-right').should.equal(true);
+    });
+    it('should get 4 notes by clicking an expander', function() {
+      var expander, nodes;
+      expander = elm.find('div.angular-tree-node .angular-tree-node-expander');
+      expander.length.should.equal(2);
+      $(expander[0]).trigger('click');
+      nodes = elm.find('div.angular-tree-node');
+      return nodes.length.should.equal(4);
+    });
+    return it('should hide 2 child notes by clicking the expanded parent node\'s expander', function() {
+      var expander, nodes;
+      expander = elm.find('div.angular-tree-node .angular-tree-node-expander');
+      $(expander[0]).trigger('click');
+      $(expander[0]).trigger('click');
+      nodes = elm.find('div.angular-tree-node').filter(function() {
+        return $(this).css('display') === 'none';
+      });
+      return nodes.length.should.equal(2);
     });
   });
 
